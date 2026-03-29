@@ -1,0 +1,46 @@
+[project]
+name = "git-dibs-sdk"
+authors = [
+    { name="Andy Giese", email="gieseanw@gmail.com" },
+]
+# Version is derived from Git tags via hatch-vcs at build time.
+dynamic = ["version"]
+description = "Python SDK for reserving and querying Git Dibs commits"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Unlicense"
+license-files = ["LICENSE"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: Public Domain",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.urls]
+Homepage = "https://gitdibs.com"
+Github = "https://github.com/gieseanw/git-dibs-sdk"
+Repository = "https://github.com/gieseanw/git-dibs-sdk.git"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+# Release versions come from Git tags like v0.2.0.
+# Untagged builds fall back to a placeholder-based development version rooted at 0.0.0.
+source = "vcs"
+fallback-version = "0.0.0"
+
+[tool.hatch.version.raw-options]
+version_scheme = "no-guess-dev"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/git_dibs_sdk"]
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/git_dibs_sdk/_version.py"
