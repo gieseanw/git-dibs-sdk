@@ -6,7 +6,7 @@ If you're reading this, you're already in too deep. Yes, I really made a python 
 ## Install
 
 ```powershell
-python -m pip install git-dibs-sdk
+pip install -i https://pypi.org/simple/ git-dibs-sdk
 ```
 
 ## Quick Start
@@ -16,14 +16,14 @@ from git_dibs_sdk import DibsAlreadyCalledError, GitDibsClient
 
 client = GitDibsClient()
 
-dibs = client.lookup_commit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+dibs = client.get_dibs("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 if dibs is None:
     print("commit is available")
 else:
     print(dibs.reserved_by, dibs.upvote_count)
 
 try:
-    created = client.reserve_commit(
+    created = client.call_dibs(
         commit_hash="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         reserved_by="bb",
     )
@@ -45,11 +45,11 @@ client = GitDibsClient(
 
 Available methods:
 
-- `lookup_commit(commit_hash) -> Dibs | None`
-- `reserve_commit(commit_hash, reserved_by) -> Dibs`
-- `list_recent_reservations() -> list[Dibs]`
-- `list_popular_reservations() -> list[Dibs]`
-- `search_reservations(query=None, after=None, limit=None) -> DibsSearchResult`
+- `get_dibs(commit_hash) -> Dibs | None`
+- `call_dibs(commit_hash, reserved_by) -> Dibs`
+- `list_recent_dibs() -> list[Dibs]`
+- `list_popular_dibs() -> list[Dibs]`
+- `search_dibs(query=None, after=None, limit=None) -> DibsSearchResult`
 - `upvote_commit(commit_hash, voter_fingerprint) -> UpvoteResult`
 
 `Dibs` fields:
@@ -88,7 +88,7 @@ from git_dibs_sdk import DibsAlreadyCalledError, GitDibsError, GitDibsClient
 client = GitDibsClient()
 
 try:
-    client.reserve_commit(
+    client.call_dibs(
         "cccccccccccccccccccccccccccccccccccccccc",
         "TestUser2",
     )
@@ -102,7 +102,7 @@ except GitDibsError as error:
 
 This SDK matches the current Git Dibs API contract:
 
-- `GET /api/commits/<commit>`
+- `GET /api/dibs/<commit>`
 - `GET /api/dibs/recent`
 - `GET /api/dibs/popular`
 - `GET /api/dibs/search?q=<optional-prefix>&after=<optional-full-commit>&limit=<optional-1-to-50>`

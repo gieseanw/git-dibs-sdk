@@ -87,9 +87,9 @@ class GitDibsClient:
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout
 
-    def lookup_commit(self, commit_hash: str) -> Dibs | None:
+    def get_dibs(self, commit_hash: str) -> Dibs | None:
         payload = self._request_json(
-            f"/api/commits/{commit_hash}",
+            f"/api/dibs/{commit_hash}",
             method="GET",
             allow_no_content=True,
         )
@@ -97,7 +97,7 @@ class GitDibsClient:
             return None
         return _deserialize_dibs_from_container(payload)
 
-    def reserve_commit(self, commit_hash: str, reserved_by: str) -> Dibs:
+    def call_dibs(self, commit_hash: str, reserved_by: str) -> Dibs:
         try:
             payload = self._request_json(
                 "/api/dibs",
@@ -112,7 +112,7 @@ class GitDibsClient:
                 dibs = _try_deserialize_embedded_dibs(error.payload)
                 if dibs is None:
                     try:
-                        dibs = self.lookup_commit(commit_hash)
+                        dibs = self.get_dibs(commit_hash)
                     except GitDibsError:
                         dibs = None
 
@@ -124,15 +124,15 @@ class GitDibsClient:
 
         return _deserialize_dibs_from_container(payload)
 
-    def list_recent_reservations(self) -> list[Dibs]:
+    def list_recent_dibs(self) -> list[Dibs]:
         payload = self._request_json("/api/dibs/recent", method="GET")
         return _deserialize_dibs_list_from_container(payload)
 
-    def list_popular_reservations(self) -> list[Dibs]:
+    def list_popular_dibs(self) -> list[Dibs]:
         payload = self._request_json("/api/dibs/popular", method="GET")
         return _deserialize_dibs_list_from_container(payload)
 
-    def search_reservations(
+    def search_dibs(
         self,
         *,
         query: str | None = None,

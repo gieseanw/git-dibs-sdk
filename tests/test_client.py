@@ -43,13 +43,13 @@ def make_http_error(status_code: int, payload: object) -> urllib.error.HTTPError
 
 
 class GitDibsClientTests(unittest.TestCase):
-    def test_lookup_commit_returns_none_on_no_content(self) -> None:
+    def test_get_dibs_returns_none_on_no_content(self) -> None:
         client = GitDibsClient("https://example.com")
 
         with mock.patch("urllib.request.urlopen", return_value=MockNoContentResponse()):
-            self.assertIsNone(client.lookup_commit("a" * 40))
+            self.assertIsNone(client.get_dibs("a" * 40))
 
-    def test_lookup_commit_uses_configured_timeout(self) -> None:
+    def test_get_dibs_uses_configured_timeout(self) -> None:
         client = GitDibsClient("https://example.com", timeout=3.5)
 
         with mock.patch(
@@ -65,11 +65,13 @@ class GitDibsClientTests(unittest.TestCase):
                 }
             ),
         ) as mocked_urlopen:
-            client.lookup_commit("a" * 40)
+            client.get_dibs("a" * 40)
 
         self.assertEqual(mocked_urlopen.call_args.kwargs["timeout"], 3.5)
+        request = mocked_urlopen.call_args.args[0]
+        self.assertTrue(request.full_url.endswith(f"/api/dibs/{'a' * 40}"))
 
-    def test_lookup_commit_wraps_url_errors(self) -> None:
+    def test_get_dibs_wraps_url_errors(self) -> None:
         client = GitDibsClient("https://example.com")
 
         with mock.patch(
@@ -77,9 +79,9 @@ class GitDibsClientTests(unittest.TestCase):
             side_effect=urllib.error.URLError("offline"),
         ):
             with self.assertRaisesRegex(GitDibsError, "offline"):
-                client.lookup_commit("a" * 40)
+                client.get_dibs("a" * 40)
 
-    def test_lookup_commit_wraps_invalid_response_shapes(self) -> None:
+    def test_get_dibs_wraps_invalid_response_shapes(self) -> None:
         client = GitDibsClient("https://example.com")
 
         with mock.patch(
@@ -87,9 +89,9 @@ class GitDibsClientTests(unittest.TestCase):
             return_value=MockJsonResponse({"unexpected": {}}),
         ):
             with self.assertRaisesRegex(GitDibsError, "dibs object"):
-                client.lookup_commit("a" * 40)
+                client.get_dibs("a" * 40)
 
-    def test_lookup_commit_raises_http_error_with_payload(self) -> None:
+    def test_get_dibs_raises_http_error_with_payload(self) -> None:
         client = GitDibsClient("https://example.com")
 
         with mock.patch(
@@ -103,12 +105,12 @@ class GitDibsClientTests(unittest.TestCase):
             ),
         ):
             with self.assertRaises(GitDibsHttpError) as raised:
-                client.lookup_commit("not-a-hash")
+                client.get_dibs("not-a-hash")
 
         self.assertEqual(raised.exception.status_code, 400)
         self.assertEqual(raised.exception.payload["details"], {"field": "commit"})
 
-    def test_reserve_commit_conflict_survives_lookup_failure(self) -> None:
+    def test_call_dibs_conflict_survives_lookup_failure(self) -> None:
         client = GitDibsClient("https://example.com")
 
         with mock.patch(
@@ -125,12 +127,12 @@ class GitDibsClientTests(unittest.TestCase):
             ],
         ):
             with self.assertRaises(DibsAlreadyCalledError) as raised:
-                client.reserve_commit("a" * 40, "Alice")
+                client.call_dibs("a" * 40, "Alice")
 
         self.assertEqual(raised.exception.commit_hash, "a" * 40)
         self.assertIsNone(raised.exception.reserved_by)
 
-    def test_reserve_commit_prefers_embedded_dibs_on_conflict(self) -> None:
+    def test_call_dibs_prefers_embedded_dibs_on_conflict(self) -> None:
         client = GitDibsClient("https://example.com")
 
         with mock.patch(
@@ -150,12 +152,12 @@ class GitDibsClientTests(unittest.TestCase):
             ),
         ) as mocked_urlopen:
             with self.assertRaises(DibsAlreadyCalledError) as raised:
-                client.reserve_commit("a" * 40, "Bob")
+                client.call_dibs("a" * 40, "Bob")
 
         self.assertEqual(raised.exception.reserved_by, "Alice")
         self.assertEqual(mocked_urlopen.call_count, 1)
 
-    def test_list_recent_reservations_parses_dibs(self) -> None:
+    def test_list_recent_dibs_parses_dibs(self) -> None:
         client = GitDibsClient("https://example.com")
 
         with mock.patch(
@@ -173,12 +175,12 @@ class GitDibsClientTests(unittest.TestCase):
                 }
             ),
         ):
-            dibs = client.list_recent_reservations()
+            dibs = client.list_recent_dibs()
 
         self.assertEqual(len(dibs), 1)
         self.assertEqual(dibs[0].upvote_count, 2)
 
-    def test_search_reservations_parses_page(self) -> None:
+    def test_search_dibs_parses_page(self) -> None:
         client = GitDibsClient("https://example.com")
 
         with mock.patch(
@@ -201,7 +203,7 @@ class GitDibsClientTests(unittest.TestCase):
                 }
             ),
         ) as mocked_urlopen:
-            page = client.search_reservations(query="aaaa", after="a" * 40, limit=10)
+            page = client.search_dibs(query="aaaa", after="a" * 40, limit=10)
 
         request = mocked_urlopen.call_args.args[0]
         self.assertIn("q=aaaa", request.full_url)
