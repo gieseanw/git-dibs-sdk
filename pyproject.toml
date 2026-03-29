@@ -5,7 +5,7 @@ authors = [
 ]
 # Version is derived from Git tags via hatch-vcs at build time.
 dynamic = ["version"]
-description = "Python SDK for reserving and querying Git Dibs commits"
+description = "Python SDK for calling dibs, and checking for dibs, on git commit hashes"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Unlicense"
