@@ -6,7 +6,7 @@ If you're reading this, you're already in too deep. Yes, I really made a python 
 ## Install
 
 ```powershell
-pip install -i https://pypi.org/simple/ git-dibs-sdk
+python -m pip install git-dibs-sdk
 ```
 
 ## Quick Start
