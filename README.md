@@ -1,6 +1,6 @@
 # git-dibs-sdk
 
-If you're reading this, you're already in too deep. Yes, I really made a python sdk for the useless utility that is "Git Dibs". It actually works.
+If you're reading this, you're already in too deep. Yes, I really made a python sdk for the useless utility that is "Git Dibs". It points at [https://gitdibs.com](https://gitdibs.com) by default.
 
 
 ## Install
@@ -45,33 +45,57 @@ client = GitDibsClient(
 
 Available methods:
 
-- `get_dibs(commit_hash) -> Dibs | None`
-- `call_dibs(commit_hash, reserved_by) -> Dibs`
+- `get_dibs(commit_hash: str) -> Dibs | None`
+- `call_dibs(commit_hash: str, reserved_by: str) -> Dibs`
 - `list_recent_dibs() -> list[Dibs]`
 - `list_popular_dibs() -> list[Dibs]`
-- `search_dibs(query=None, after=None, limit=None) -> DibsSearchResult`
-- `upvote_commit(commit_hash, voter_fingerprint) -> UpvoteResult`
+- `search_dibs(*, query: str | None = None, after: str | None = None, limit: int | None = None) -> DibsSearchResult`
+- `upvote_commit(commit_hash: str, voter_fingerprint: str) -> UpvoteResult`
 
 `Dibs` fields:
 
-- `hash`
-- `reserved_at_utc`
-- `reserved_by`
-- `upvote_count`
+- `hash: str`
+  Full 40-character lowercase SHA-1 commit hash.
+  Example: `"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
+- `reserved_at_utc: str`
+  Reservation timestamp in UTC as an ISO 8601 string.
+  Example: `"2026-03-28T00:00:00.000Z"`
+- `reserved_by: str`
+  Alphanumeric caller name recorded by the API.
+  Example: `"AndyG"`
+- `upvote_count: int`
+  Current number of upvotes for the dibs entry.
+  Example: `7`
 
 `DibsSearchResult` fields:
 
-- `dibs`
-- `query`
-- `after`
-- `limit`
-- `has_more`
-- `next_after`
+- `dibs: list[Dibs]`
+  Page of dibs results returned by the search endpoint.
+  Example: `[Dibs(...), Dibs(...)]`
+- `query: str | None`
+  Hex prefix used to filter results, or `None` when listing all dibs.
+  Example: `"deadbeef"`
+- `after: str | None`
+  Full 40-character cursor hash used to continue pagination, or `None` on the first page.
+  Example: `"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
+- `limit: int`
+  Maximum number of results requested for the page.
+  Example: `10`
+- `has_more: bool`
+  Whether another page of results exists after this one.
+  Example: `True`
+- `next_after: str | None`
+  Cursor to pass as `after` for the next page, or `None` when there are no more results.
+  Example: `"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"`
 
 `UpvoteResult` fields:
 
-- `applied`
-- `upvote_count`
+- `applied: bool`
+  Whether this request added a new upvote rather than hitting an existing deduplicated vote.
+  Example: `True`
+- `upvote_count: int`
+  Current upvote count for the dibs entry after the request.
+  Example: `8`
 
 ## Error Handling
 
